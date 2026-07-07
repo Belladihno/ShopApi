@@ -1,65 +1,65 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ShopifyApi.Data;
-using ShopifyApi.Models;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using ShopifyApi.DTOs.Products;
+using ShopifyApi.Interfaces;
+
 
 namespace ShopifyApi.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
+    [Authorize]
     public class ProductsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IProductService _productService;
 
         // constructor injection
-        public ProductsController(AppDbContext context)
+        public ProductsController(IProductService productService)
         {
-            _context = context;
+            _productService = productService;
         }
 
         //GET api/products
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetAll()
+        public async Task<ActionResult<IEnumerable<ProductResponseDto>>> GetAll()
         {
-            return await _context.Products.ToListAsync();
+            var products = await _productService.GetAllAsync();
+            return Ok(products);
         }
 
         //GET api/products/id
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetById(int id)
+        public async Task<ActionResult<ProductResponseDto>> GetById(int id)
         {
-            var product = await _context.Products.FindAsync(id);
+            var product = await _productService.GetByIdAsync(id);
             if (product == null) return NotFound();
-            return product;
+            return Ok(product);
         }
 
         //POST api/products
         [HttpPost]
-        public async Task<ActionResult<Product>> Create(Product product)
+        public async Task<ActionResult<ProductResponseDto>> Create(CreateProductDto dto)
         {
-            _context.Products.Add(product);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetById), new {id = product.Id}, product);
+            var product = await _productService.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
         }
 
         // PUT api/products/id
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, Product product)
+        public async Task<ActionResult<ProductResponseDto>> Update(int id, UpdateProductDto dto)
         {
-            if (id != product.Id) return BadRequest();
-            _context.Entry(product).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-            return NoContent();
+            var product = await _productService.UpdateAsync(id, dto);
+            if (product == null) return NotFound();
+            return Ok(product);
         }
 
         // DELETE api/products/id
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var product = await _context.Products.FindAsync(id);
-            if (product == null) return NotFound();
-            _context.Products.Remove(product);
-            await _context.SaveChangesAsync();
+            var product = await _productService.DeleteAsync(id);
+            if (!product) return NotFound();
             return NoContent();
         }
     }
