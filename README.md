@@ -68,13 +68,13 @@ The API will be available at `http://localhost:5054` with Swagger UI at `http://
 
 ### Products (`/api/products`)
 
-| Method | Endpoint           | Description        | Auth Required |
-|--------|--------------------|--------------------|---------------|
-| GET    | `/api/products`    | Get all products   | No            |
-| GET    | `/api/products/{id}` | Get product by ID | No            |
-| POST   | `/api/products`    | Create a product   | No            |
-| PUT    | `/api/products/{id}` | Update a product | No            |
-| DELETE | `/api/products/{id}` | Delete a product | No            |
+| Method | Endpoint           | Description        | Auth Required       |
+|--------|--------------------|--------------------|---------------------|
+| GET    | `/api/products`    | Get all products   | JWT token           |
+| GET    | `/api/products/{id}` | Get product by ID | JWT token           |
+| POST   | `/api/products`    | Create a product   | JWT token           |
+| PUT    | `/api/products/{id}` | Update a product | JWT token           |
+| DELETE | `/api/products/{id}` | Delete a product | Admin only          |
 
 ### Auth (`/api/auth`)
 
